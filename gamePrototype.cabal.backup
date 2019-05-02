@@ -1,0 +1,131 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.31.1.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: d6f6db99b64051f2e53b349e336e8e2def41f8fbad309404505a72ce48c14747
+
+name:           gamePrototype
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/githubuser/gamePrototype#readme>
+homepage:       https://github.com/githubuser/gamePrototype#readme
+bug-reports:    https://github.com/githubuser/gamePrototype/issues
+author:         Author name here
+maintainer:     example@example.com
+copyright:      2019 Author name here
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    ChangeLog.md
+
+source-repository head
+  type: git
+  location: https://github.com/githubuser/gamePrototype
+
+library
+  exposed-modules:
+      Player
+      Planet
+      Moveable
+      Component
+      Entity
+      Game
+      Geometry
+      HList
+      Lib
+      Sprite
+      Control.Wire
+      Control.Wire.Core
+      Control.Wire.Event
+      Control.Wire.Interval
+      Control.Wire.Run
+      Control.Wire.Session
+      Control.Wire.Switch
+      Control.Wire.Time
+      Control.Wire.Unsafe.Event
+      FRP.Netwire
+      FRP.Netwire.Analyze
+      FRP.Netwire.Move
+      FRP.Netwire.Noise
+      FRP.Netwire.Utils.Timeline
+  other-modules:
+      Paths_gamePrototype
+  hs-source-dirs:
+      src
+      netwire-5.0.3
+  build-depends:
+      JuicyPixels
+    , array
+    , base >=4.7 && <5
+    , containers >=0.5 && <1
+    , deepseq >=1.3 && <2
+    , gloss
+    , lens
+    , mtl
+    , parallel >=3.2 && <4
+    , profunctors >=4.3 && <6
+    , random >=1.1 && <2
+    , semigroups >=0.15 && <1
+    , time >=1.4 && <2
+    , transformers >=0.3 && <1
+    , vector
+    , linear
+  default-language: Haskell2010
+  extensions: FlexibleInstances DataKinds FlexibleContexts MultiParamTypeClasses Arrows DataKinds TypeFamilies
+
+executable gamePrototype-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_gamePrototype
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyPixels
+    , array
+    , base >=4.7 && <5
+    , containers >=0.5 && <1
+    , deepseq >=1.3 && <2
+    , gamePrototype
+    , gloss
+    , lens
+    , mtl
+    , parallel >=3.2 && <4
+    , profunctors >=4.3 && <6
+    , random >=1.1 && <2
+    , semigroups >=0.15 && <1
+    , time >=1.4 && <2
+    , transformers >=0.3 && <1
+    , vector
+    , linear
+  default-language: Haskell2010
+
+test-suite gamePrototype-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_gamePrototype
+  hs-source-dirs:
+      test
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyPixels
+    , array
+    , base >=4.7 && <5
+    , containers >=0.5 && <1
+    , deepseq >=1.3 && <2
+    , gamePrototype
+    , gloss
+    , lens
+    , mtl
+    , parallel >=3.2 && <4
+    , profunctors >=4.3 && <6
+    , random >=1.1 && <2
+    , semigroups >=0.15 && <1
+    , time >=1.4 && <2
+    , transformers >=0.3 && <1
+    , vector
+  default-language: Haskell2010
