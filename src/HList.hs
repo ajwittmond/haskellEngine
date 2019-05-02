@@ -11,6 +11,8 @@ import Control.Lens hiding (Contains)
 import Data.Typeable
 import Control.DeepSeq
 import Control.Applicative
+import Text.Read
+import Text.ParserCombinators.ReadP
 
 type family TEq a b :: Bool where
   TEq a a = 'True
@@ -161,106 +163,20 @@ instance Monoid (HList '[]) where
 instance (Monoid x, Monoid (HList xs)) => Monoid (HList ( x ': xs )) where
   mempty =  mempty `HCons` mempty
 
-data family SignalL (l::[*])
-
-data instance SignalL '[] = SNil
-data instance SignalL (x ': xs) = [Signal x] `SCons` SignalL xs
-
-infixr 8 `SCons`
-
-instance Headable SignalL (a ': b) [Signal a] where
-  headH (SCons x l) = x
-
-instance Tailable SignalL (a ': b) b where
-  tailH (SCons x l) = l
-
-instance Nilable SignalL where
-  nil' = SNil
-
-instance Consable SignalL l (a ': l) [Signal a] where
-  cons' = SCons
-
-instance Show (SignalL '[]) where
-  show SNil = "SNil"
-
-instance (Show a,Show (SignalL b)) => Show (SignalL (a ': b)) where
-  show (SCons x l) = "(SCons "++show x++" "++show l++")"
-
-class EmptySig (a::[*]) where
-  emptySignal :: SignalL a
-
-instance EmptySig c => EmptySig ( a  ': c) where
-  emptySignal = [] `SCons` emptySignal
-
-instance EmptySig '[] where
-  emptySignal = SNil
-
-data family EntityL (l::[*])
-
-data instance EntityL '[] = ENil
-data instance EntityL (x ': xs) = [x] `ECons` EntityL xs
-
-infixr 8 `ECons`
-
-instance Headable EntityL (a ': b) [a] where
-  headH (ECons x l) = x
-
-instance Tailable EntityL (a ': b) b where
-  tailH (ECons x l) = l
-
-instance Nilable EntityL where
-  nil' = ENil
-
-instance Consable EntityL l (a ': l) [ a] where
-  cons' = ECons
-
-instance Show (EntityL '[]) where
-  show ENil = "ENil"
-
-instance (Show a,Show (EntityL b)) => Show (EntityL (a ': b)) where
-  show (ECons x l) = "(ECons "++show x++" "++show l++")"
+instance (Read x, Read (HList xs)) => Read (HList (x ': xs)) where
+  readPrec = do
+    x <- readPrec
+    lift $ do
+      skipSpaces
+      string ".*."
+    xs <- readPrec
+    return $ x .*. xs
 
 type family HLift (r :: [*] -> *) (a :: *) where
      HLift HList a = a
-     HLift EntityL a = [a]
-     HLift SignalL a = [Signal a]
 
 type family HUnLift (r :: [*] -> *) (a :: *) where
      HUnLift HList a = a
-     HUnLift EntityL [a] = a
-     HUnLift SignalL [Signal a] = a
-
-
-class EmptyEnt (a::[*]) where
-  emptyEntity :: EntityL a
-
-instance (EmptyEnt c) => EmptyEnt (a ': c) where
-  emptyEntity = [] `ECons` emptyEntity
-
-instance EmptyEnt '[] where
-  emptyEntity = ENil
-
-instance (EmptyEnt b,Monoid (EntityL b)) => Monoid (EntityL (a ': b)) where
-  mempty = emptyEntity
-  mappend (x `ECons` xs) (y `ECons` ys) = (x ++ y) `ECons` mappend xs ys
-
-instance Monoid (EntityL '[]) where
-  mempty = emptyEntity
-  mappend ENil ENil = ENil
-
-instance (Monoid (EntityL a)) => Semigroup (EntityL a) where
- (<>) = mappend
-
-instance (EmptySig b,Monoid (SignalL b)) => Monoid (SignalL (a ': b)) where
-  mempty = emptySignal
-  mappend (x `SCons` xs) (y `SCons` ys) = (x ++ y) `SCons` mappend xs ys
-
-instance Monoid (SignalL '[]) where
-  mempty = emptySignal
-  mappend SNil SNil = SNil
-
-instance (Monoid (SignalL a)) => Semigroup (SignalL a) where
- (<>) = mappend
 
 class SameLength' (es1 :: [k]) (es2 :: [m])
 instance (es2 ~ '[]) => SameLength' '[] es2

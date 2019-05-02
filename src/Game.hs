@@ -15,7 +15,8 @@ module Game(
   module W,
   module HList,
   newGame,
-  gameWire
+  gameWire,
+  extractFromGame
 )where
 
 import Prelude hiding ((.),id,init)
@@ -23,17 +24,17 @@ import HList
 import Control.Wire as W
 import Graphics.Gloss.Interface.IO.Interact as G
 import Control.Lens
-import Data.IntMap.Strict as M
+import qualified Data.IntMap.Strict as M
 import Control.Monad.State.Strict
 import Control.Monad.ST.Strict
 import Control.Wire.Unsafe.Event
 import Data.Proxy
+import Data.Maybe
 
 -- | Class representing game events
 data GEvent' g (a :: [[*]]) =
   Gloss G.Event |
-  Create (g a -> g a) |
-  Picture G.Picture
+  Create (g a -> g a) 
 
 
 type GameWire' g thisEntity entities =
@@ -54,7 +55,7 @@ data EntityData (a :: [*]) = EntityData {
 }
 makeLenses 'EntityData
 
-newtype Entities g x entities = Entities (Int,IntMap (HList x,GameWire' g x entities))
+newtype Entities g x entities = Entities (Int,M.IntMap (HList x,GameWire' g x entities))
 
 instance Semigroup (Entities g x entities) where
   (Entities (i,m)) <> (Entities (i',m')) = (Entities (i',m'))
@@ -163,4 +164,22 @@ class (Component (HList this) this entities,
             w = wire (Proxy :: Proxy (HList this))
         in entities.tIxp (Proxy :: Proxy (Entities Game this entities))  %~ \(Entities (i,mp)) ->
                Entities (i+1,M.insert (i+1) (e,w) mp)
- 
+
+data Extract = Extract
+class ApplyExtract a (b::[*]) (c :: Bool) where
+  extract :: Proxy c -> HList b -> Maybe a
+
+instance (TypeIxable (HList b) a) => ApplyExtract a b 'True where
+  extract _ hs = Just $ hs ^. tIx
+
+instance ApplyExtract a b 'False where
+  extract _ hs = Nothing
+
+instance (ApplyExtract a b (HList.Contains b a))
+          => ApplyAB Extract ([a],Entities Game b entities) [a] where
+  applyAB _ (ls,Entities (_,mp)) =
+    foldl (\l (e,_) -> maybe l (:l) $ extract (Proxy :: Proxy (HList.Contains b a)) e) ls mp
+
+extractFromGame :: forall a entities . (HFoldl HList Extract (Mapify Game entities entities) [a] [a])
+                    => Game entities -> [a]
+extractFromGame g = hFoldl Extract ([] :: [a]) (g^.entities)

@@ -83,3 +83,4 @@ instance (TypeIxable (HList this) TransformedSprite,
   wire _ = never . mkGen_
            (const $ Right <$> 
              (((tIx .=) =<< liftA2 transformPicture (use tIx) (use tIx))))
+
